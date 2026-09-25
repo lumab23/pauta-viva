@@ -1,105 +1,73 @@
-# Contrato previsto da API e modelo de dados
+# API de pautas
 
-Este documento define o alvo para a etapa de back-end. Os endpoints abaixo ainda não estão implementados.
+Base local: `http://localhost:8000/api/pautas`
 
-## Recurso `pauta`
+Criação e edição recebem um objeto JSON. Toda resposta com corpo usa `Content-Type: application/json; charset=utf-8`.
 
-| Campo | Tipo na API | Regra prevista |
+## Modelo e validações
+
+| Campo | Tipo | Regra |
 |---|---|---|
-| `id` | inteiro | Identificador positivo, gerado pelo banco |
-| `titulo` | string | Obrigatório; limite proposto de 255 caracteres |
-| `descricao` | string | Obrigatório; texto da pauta |
-| `editoria` | string | Obrigatório; limite proposto de 100 caracteres |
+| `id` | inteiro | Positivo, gerado pelo banco e somente leitura |
+| `titulo` | string | Obrigatório, de 1 a 255 caracteres após remover espaços externos |
+| `descricao` | string | Obrigatório, de 1 a 10.000 caracteres após remover espaços externos |
+| `editoria` | string | Obrigatório, de 1 a 100 caracteres após remover espaços externos |
 | `status` | string | Obrigatório: `ideia`, `em_apuracao` ou `publicada` |
-| `prazo` | string ou `null` | Opcional; data e hora em ISO 8601 |
-| `criado_em` | string | Data e hora em ISO 8601; definida pelo servidor |
-| `atualizado_em` | string | Data e hora em ISO 8601; definida pelo servidor |
+| `prazo` | string ou `null` | Opcional, ISO 8601 com data, horário e fuso |
+| `criado_em` | string | ISO 8601 em UTC, definido pelo servidor e somente leitura |
+| `atualizado_em` | string | ISO 8601 em UTC, definido pelo servidor e somente leitura |
 
-Os limites propostos deverão ser confirmados ao implementar a validação. Datas enviadas e retornadas pela API devem declarar o fuso horário; a estratégia de armazenamento será definida de forma consistente na implementação.
+O prazo aceita, por exemplo, `2030-01-10T12:30:00-03:00` ou `2030-01-10T15:30:00Z`. O valor é convertido para UTC antes da gravação. Campos desconhecidos no corpo são rejeitados.
 
-## Modelo MySQL planejado
-
-Tabela `pautas`:
-
-| Coluna | Tipo proposto | Restrições propostas |
-|---|---|---|
-| `id` | `BIGINT UNSIGNED` | chave primária, auto incremento |
-| `titulo` | `VARCHAR(255)` | não nulo |
-| `descricao` | `TEXT` | não nulo |
-| `editoria` | `VARCHAR(100)` | não nulo, indexado |
-| `status` | `ENUM('ideia','em_apuracao','publicada')` | não nulo, indexado |
-| `prazo` | `DATETIME` | nulo permitido |
-| `criado_em` | `DATETIME` | não nulo |
-| `atualizado_em` | `DATETIME` | não nulo |
-
-A migration e os índices definitivos serão criados na etapa de back-end. A busca por título deve usar correspondência parcial; qualquer otimização adicional deve ser orientada por necessidade real.
-
-## Endpoints planejados
-
-Base: `/api/pautas`
-
-| Método | Caminho | Finalidade | Sucesso previsto |
-|---|---|---|---|
-| `GET` | `/api/pautas` | Listar, buscar e filtrar pautas | `200` |
-| `GET` | `/api/pautas/{id}` | Obter uma pauta | `200` |
-| `POST` | `/api/pautas` | Criar uma pauta | `201` |
-| `PUT` | `/api/pautas/{id}` | Substituir os campos editáveis | `200` |
-| `DELETE` | `/api/pautas/{id}` | Excluir uma pauta | `204` |
-
-### Consulta da coleção
-
-Parâmetros opcionais de `GET /api/pautas`:
-
-- `titulo`: busca parcial pelo título.
-- `editoria`: correspondência exata da editoria.
-- `status`: correspondência exata; aceita somente os três status definidos.
-- `pagina`: inteiro positivo; padrão proposto `1`.
-- `por_pagina`: inteiro positivo; padrão proposto `20`, com limite a definir.
-
-Os filtros podem ser combinados. Ordenação padrão proposta: `criado_em` decrescente.
-
-Exemplo de consulta:
+## Criar
 
 ```http
-GET /api/pautas?titulo=eleicoes&editoria=politica&status=em_apuracao
-```
+POST /api/pautas
+Content-Type: application/json
 
-### Corpo de criação e atualização
-
-Campos aceitos em `POST` e `PUT`:
-
-```json
 {
-  "titulo": "Cobertura das eleições municipais",
-  "descricao": "Apurar propostas dos candidatos para mobilidade urbana.",
-  "editoria": "politica",
+  "titulo": "Pauta de demonstração técnica",
+  "descricao": "Conteúdo usado apenas para experimentar a API local.",
+  "editoria": "teste",
   "status": "ideia",
-  "prazo": "2026-10-01T18:00:00-03:00"
+  "prazo": "2030-01-10T12:30:00-03:00"
 }
 ```
 
-`prazo` pode ser `null`. `id`, `criado_em` e `atualizado_em` não são campos graváveis pelo cliente. A semântica de atualização parcial não está prevista inicialmente; se necessária, poderá ser especificada depois com `PATCH`.
-
-## Formato previsto das respostas
-
-Objeto individual:
+Resposta `201 Created`:
 
 ```json
 {
   "data": {
     "id": 1,
-    "titulo": "Cobertura das eleições municipais",
-    "descricao": "Apurar propostas dos candidatos para mobilidade urbana.",
-    "editoria": "politica",
+    "titulo": "Pauta de demonstração técnica",
+    "descricao": "Conteúdo usado apenas para experimentar a API local.",
+    "editoria": "teste",
     "status": "ideia",
-    "prazo": "2026-10-01T18:00:00-03:00",
-    "criado_em": "2026-09-25T10:00:00-03:00",
-    "atualizado_em": "2026-09-25T10:00:00-03:00"
+    "prazo": "2030-01-10T15:30:00+00:00",
+    "criado_em": "2026-09-25T13:00:00+00:00",
+    "atualizado_em": "2026-09-25T13:00:00+00:00"
   }
 }
 ```
 
-Coleção paginada:
+## Listar, buscar e filtrar
+
+```http
+GET /api/pautas?titulo=demonstracao&editoria=teste&status=ideia&pagina=1&por_pagina=20
+```
+
+Todos os parâmetros são opcionais:
+
+- `titulo`: busca parcial, de 1 a 255 caracteres; `%` e `_` são tratados literalmente.
+- `editoria`: correspondência exata, de 1 a 100 caracteres.
+- `status`: correspondência exata com um status permitido.
+- `pagina`: inteiro positivo, padrão `1`.
+- `por_pagina`: inteiro entre `1` e `100`, padrão `20`.
+
+Os filtros podem ser combinados. Parâmetros desconhecidos ou inválidos retornam `400`. A ordenação é por criação e ID, do mais recente para o mais antigo.
+
+Resposta `200 OK`:
 
 ```json
 {
@@ -112,7 +80,42 @@ Coleção paginada:
 }
 ```
 
-Erro:
+## Consultar por ID
+
+```http
+GET /api/pautas/1
+```
+
+Retorna `200 OK` com a pauta em `data`. Um ID inexistente retorna `404`; um ID que não seja inteiro positivo retorna `400`.
+
+## Editar
+
+```http
+PUT /api/pautas/1
+Content-Type: application/json
+
+{
+  "titulo": "Pauta de demonstração revisada",
+  "descricao": "Conteúdo atualizado somente para experimentar a API local.",
+  "editoria": "teste",
+  "status": "publicada",
+  "prazo": null
+}
+```
+
+Retorna `200 OK` com a pauta atualizada. `PUT` substitui todos os campos editáveis, portanto todos os campos obrigatórios devem estar presentes. Não há atualização parcial com `PATCH`.
+
+## Excluir
+
+```http
+DELETE /api/pautas/1
+```
+
+Retorna `204 No Content`, sem corpo. Uma pauta inexistente retorna `404`.
+
+## Respostas de erro
+
+Exemplo de `422 Unprocessable Entity`:
 
 ```json
 {
@@ -126,14 +129,19 @@ Erro:
 }
 ```
 
-Códigos de erro previstos: `400` para JSON ou parâmetros inválidos, `404` para pauta inexistente, `422` para falha de validação e `500` para erro interno sem exposição de dados sensíveis.
+| Código HTTP | Situação |
+|---|---|
+| `200` | Consulta ou edição concluída |
+| `201` | Criação concluída |
+| `204` | Exclusão concluída |
+| `400` | JSON, ID ou parâmetros de consulta inválidos |
+| `404` | Pauta ou rota inexistente |
+| `405` | Método não permitido para uma rota existente |
+| `422` | Campos da pauta não passaram na validação |
+| `500` | Dependências, configuração, banco ou outra falha interna |
 
-## Separação de responsabilidades prevista
+Erros internos retornam uma mensagem genérica, sem credenciais, SQL ou rastros de execução.
 
-- O roteador identifica método e caminho e encaminha a requisição.
-- O controlador transforma entrada e saída HTTP e coordena o caso solicitado.
-- A validação rejeita dados ausentes, inválidos ou fora dos limites.
-- A persistência executa consultas parametrizadas e converte registros do banco.
+## Persistência
 
-Essas responsabilidades serão implementadas na etapa de back-end. Não há garantia de compatibilidade até o contrato ser acompanhado por testes.
-
+A tabela é criada por `database/migrations/001_create_pautas.sql`. Ela usa InnoDB, `utf8mb4`, índices para editoria e status e um `ENUM` que restringe os três status. Todas as consultas que recebem valores externos são parametrizadas com PDO.

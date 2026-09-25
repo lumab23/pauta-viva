@@ -4,7 +4,11 @@
   "type": "project",
   "license": "proprietary",
   "require": {
-    "php": ">=8.2"
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.0"
@@ -20,10 +24,11 @@
     }
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit --testsuite unit",
+    "test:integration": "phpunit --testsuite integration",
+    "test:all": "phpunit"
   },
   "config": {
     "sort-packages": true
   }
 }
-
