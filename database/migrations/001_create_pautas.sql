@@ -1,3 +1,4 @@
+-- As datas são gravadas em UTC pela aplicação.
 CREATE TABLE IF NOT EXISTS pautas (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     titulo VARCHAR(255) NOT NULL,
@@ -13,4 +14,3 @@ CREATE TABLE IF NOT EXISTS pautas (
 ) ENGINE=InnoDB
   DEFAULT CHARACTER SET utf8mb4
   COLLATE utf8mb4_0900_ai_ci;
-

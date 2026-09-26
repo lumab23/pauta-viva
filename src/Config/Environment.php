@@ -21,6 +21,7 @@ final class Environment
         }
 
         foreach ($values as $name => $value) {
+            // Não sobrescreve variáveis que já foram definidas no servidor.
             if (getenv((string) $name) !== false) {
                 continue;
             }
@@ -49,4 +50,3 @@ final class Environment
         return $value;
     }
 }
-

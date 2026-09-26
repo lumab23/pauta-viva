@@ -55,6 +55,7 @@ try {
 
     $router->dispatch($request)->send();
 } catch (Throwable $exception) {
+    // Registra o erro no servidor sem mostrar detalhes para o cliente.
     error_log(sprintf('[pauta-viva] %s', $exception->getMessage()));
     Response::error(
         'internal_error',

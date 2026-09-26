@@ -32,6 +32,7 @@ final class Request
             $rawBody = file_get_contents('php://input');
 
             if ($rawBody !== false && trim($rawBody) !== '') {
+                // O corpo da requisição precisa ser um objeto JSON.
                 $decoded = json_decode($rawBody, false, 512, JSON_THROW_ON_ERROR);
 
                 if (!is_object($decoded)) {
@@ -54,4 +55,3 @@ final class Request
         return rtrim($path, '/');
     }
 }
-

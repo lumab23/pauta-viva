@@ -31,9 +31,9 @@ final class Database
             ]
         );
 
+        // Usa UTC em todas as datas desta conexão.
         $pdo->exec("SET time_zone = '+00:00'");
 
         return $pdo;
     }
 }
-

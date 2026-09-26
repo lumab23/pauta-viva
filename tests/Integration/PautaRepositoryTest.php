@@ -22,6 +22,7 @@ final class PautaRepositoryTest extends TestCase
             self::markTestSkipped('Defina TEST_DB_DATABASE para executar os testes de integração.');
         }
 
+        // O teste limpa a tabela, por isso só aceita um banco com sufixo _test.
         if (!str_ends_with($database, '_test')) {
             self::fail('TEST_DB_DATABASE deve terminar em _test.');
         }

@@ -1,6 +1,6 @@
 # Pauta Viva
 
-Back-end de um sistema de gestão de pautas jornalísticas, criado para um teste prático de aprendiz. A aplicação oferece uma API HTTP em PHP para criação, consulta, edição, exclusão, busca e filtragem de pautas.
+Sistema de gestão de pautas jornalísticas, criado para um teste prático de aprendiz. A aplicação combina uma API HTTP em PHP com uma interface responsiva em HTML, CSS e JavaScript sem framework.
 
 ## Tecnologias
 
@@ -9,6 +9,7 @@ Back-end de um sistema de gestão de pautas jornalísticas, criado para um teste
 - PDO MySQL
 - Composer 2
 - PHPUnit 11
+- HTML5, CSS3 e JavaScript
 - Git
 
 ## Requisitos
@@ -53,10 +54,22 @@ Back-end de um sistema de gestão de pautas jornalísticas, criado para um teste
 5. Inicie o servidor de desenvolvimento na raiz do projeto:
 
    ```sh
-   php -S localhost:8000 -t public
+   php -S localhost:8000 -t public public/router.php
    ```
 
-A API estará disponível em `http://localhost:8000/api/pautas`.
+A interface estará disponível em `http://localhost:8000/` e a API em `http://localhost:8000/api/pautas`. O arquivo `public/router.php` encaminha as requisições da API ao front controller e entrega os arquivos estáticos durante o desenvolvimento.
+
+## Uso da interface
+
+A tela inicial apresenta a lista paginada e um resumo da quantidade de pautas em cada status. Pela mesma tela é possível:
+
+- buscar pautas por parte do título;
+- filtrar por editoria e status;
+- consultar todos os detalhes de uma pauta;
+- cadastrar e editar pautas em um formulário;
+- excluir uma pauta após confirmação.
+
+As mensagens de validação retornadas pela API são apresentadas junto aos campos correspondentes. Erros de rede e falhas HTTP também aparecem na interface com uma opção para tentar novamente.
 
 ## Endpoints
 
@@ -122,7 +135,12 @@ Para executar as duas suítes, use `composer test:all` com as mesmas variáveis.
 ├── config/database.php                 # Configuração do MySQL
 ├── database/migrations/                # Criação reproduzível da tabela
 ├── docs/api.md                         # Contrato e exemplos da API
-├── public/index.php                    # Composição e ponto de entrada HTTP
+├── public/
+│   ├── assets/css/app.css              # Identidade visual responsiva
+│   ├── assets/js/app.js                # Integração da interface com a API
+│   ├── index.html                      # Interface de gestão
+│   ├── index.php                       # Composição e ponto de entrada da API
+│   └── router.php                      # Roteador do servidor PHP local
 ├── src/
 │   ├── Config/Environment.php          # Carregamento do arquivo .env
 │   ├── Http/
@@ -138,7 +156,3 @@ Para executar as duas suítes, use `composer test:all` com as mesmas variáveis.
 ```
 
 As datas são armazenadas em UTC e retornadas com o deslocamento `+00:00`. Falhas internas produzem uma mensagem genérica e não expõem credenciais, SQL ou rastros de execução ao cliente.
-
-## Fora do escopo
-
-A interface, autenticação, upload, integrações externas e recursos de IA não fazem parte desta etapa.

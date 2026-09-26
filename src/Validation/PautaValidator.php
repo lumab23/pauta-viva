@@ -53,6 +53,7 @@ final class PautaValidator
             if ($deadline === null) {
                 $errors['prazo'][] = 'Use uma data ISO 8601 com horário e fuso, por exemplo 2026-10-01T18:00:00-03:00.';
             } else {
+                // Converte o prazo para UTC antes de salvar no MySQL.
                 $data['prazo'] = $deadline
                     ->setTimezone(new DateTimeZone('UTC'))
                     ->format('Y-m-d H:i:s');
@@ -215,6 +216,7 @@ final class PautaValidator
             return null;
         }
 
+        // Também aceita datas terminadas em Z, que representa UTC.
         $normalized = str_ends_with($value, 'Z')
             ? substr($value, 0, -1) . '+00:00'
             : $value;
@@ -233,4 +235,3 @@ final class PautaValidator
         return $deadline;
     }
 }
-

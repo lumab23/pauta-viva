@@ -147,6 +147,7 @@ final class PautaRepository
 
         if (isset($filters['titulo'])) {
             $clauses[] = "titulo LIKE :titulo ESCAPE '!'";
+            // Escapa os curingas do LIKE para pesquisar o texto digitado.
             $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $filters['titulo']);
             $parameters[':titulo'] = '%' . $escaped . '%';
         }
@@ -173,6 +174,7 @@ final class PautaRepository
      */
     private function mapRow(array $row): array
     {
+        // As datas retornadas pelo banco estão em UTC.
         $utc = new DateTimeZone('UTC');
 
         return [

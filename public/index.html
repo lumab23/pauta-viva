@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gestão de pautas jornalísticas">
+  <title>Pauta Viva</title>
+  <link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <header class="topbar">
+    <div class="brand" aria-label="Pauta Viva">
+      <span class="brand-mark" aria-hidden="true">PV</span>
+      <span>
+        <strong>Pauta Viva</strong>
+        <small>Gestão editorial</small>
+      </span>
+    </div>
+
+    <button class="button button-primary" id="new-pauta-button" type="button">
+      <span aria-hidden="true">＋</span>
+      Nova pauta
+    </button>
+  </header>
+
+  <main id="conteudo" class="page">
+    <section class="page-heading" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Painel de pautas</p>
+        <h1 id="page-title">Acompanhe o fluxo editorial</h1>
+      </div>
+      <p class="page-intro">Organize ideias, apurações em andamento e conteúdos publicados.</p>
+    </section>
+
+    <section class="summary-grid" aria-label="Resumo por status">
+      <article class="summary-card summary-idea">
+        <span class="summary-label">Ideias</span>
+        <strong id="summary-ideia" aria-live="polite">—</strong>
+      </article>
+      <article class="summary-card summary-progress">
+        <span class="summary-label">Em apuração</span>
+        <strong id="summary-em-apuracao" aria-live="polite">—</strong>
+      </article>
+      <article class="summary-card summary-published">
+        <span class="summary-label">Publicadas</span>
+        <strong id="summary-publicada" aria-live="polite">—</strong>
+      </article>
+    </section>
+
+    <section class="workspace" aria-labelledby="list-title">
+      <div class="workspace-heading">
+        <div>
+          <p class="eyebrow">Visão geral</p>
+          <h2 id="list-title">Pautas</h2>
+        </div>
+        <p id="result-count" class="result-count" aria-live="polite"></p>
+      </div>
+
+      <form id="filter-form" class="filters" role="search">
+        <div class="field field-search">
+          <label for="filter-title">Buscar por título</label>
+          <input id="filter-title" name="titulo" type="search" maxlength="255" placeholder="Digite parte do título">
+        </div>
+
+        <div class="field">
+          <label for="filter-editoria">Editoria</label>
+          <input id="filter-editoria" name="editoria" type="text" maxlength="100" list="editoria-options" placeholder="Todas">
+          <datalist id="editoria-options"></datalist>
+        </div>
+
+        <div class="field">
+          <label for="filter-status">Status</label>
+          <select id="filter-status" name="status">
+            <option value="">Todos</option>
+            <option value="ideia">Ideia</option>
+            <option value="em_apuracao">Em apuração</option>
+            <option value="publicada">Publicada</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="button button-dark" type="submit">Aplicar filtros</button>
+          <button class="button button-quiet" id="clear-filters-button" type="button">Limpar</button>
+        </div>
+      </form>
+
+      <div id="loading-state" class="state-panel" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>Carregando pautas…</p>
+      </div>
+
+      <div id="error-state" class="state-panel state-error" hidden>
+        <strong>Não foi possível carregar as pautas.</strong>
+        <p id="error-state-message">Verifique a conexão e tente novamente.</p>
+        <button class="button button-secondary" id="retry-button" type="button">Tentar novamente</button>
+      </div>
+
+      <div id="empty-state" class="state-panel" hidden>
+        <span class="empty-mark" aria-hidden="true">⌁</span>
+        <strong id="empty-title">Nenhuma pauta cadastrada</strong>
+        <p id="empty-message">Crie a primeira pauta para começar a organizar o trabalho.</p>
+        <button class="button button-secondary" id="empty-action-button" type="button">Criar pauta</button>
+      </div>
+
+      <div id="table-region" class="table-region" hidden>
+        <table>
+          <caption class="sr-only">Pautas encontradas</caption>
+          <thead>
+            <tr>
+              <th scope="col">Pauta</th>
+              <th scope="col">Editoria</th>
+              <th scope="col">Status</th>
+              <th scope="col">Prazo</th>
+              <th scope="col"><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="pautas-body"></tbody>
+        </table>
+      </div>
+
+      <nav id="pagination" class="pagination" aria-label="Paginação" hidden>
+        <button class="button button-quiet" id="previous-page-button" type="button">← Anterior</button>
+        <span id="page-indicator"></span>
+        <button class="button button-quiet" id="next-page-button" type="button">Próxima →</button>
+      </nav>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="pauta-dialog" class="dialog dialog-form" aria-labelledby="form-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow" id="form-eyebrow">Nova pauta</p>
+        <h2 id="form-title">Cadastrar pauta</h2>
+      </div>
+      <button class="icon-button" type="button" data-close-dialog="pauta-dialog" aria-label="Fechar">×</button>
+    </div>
+
+    <form id="pauta-form" novalidate>
+      <div id="form-error" class="form-message" role="alert" hidden></div>
+
+      <div class="field">
+        <label for="pauta-titulo">Título</label>
+        <input id="pauta-titulo" name="titulo" type="text" maxlength="255" required autocomplete="off" aria-describedby="pauta-titulo-error">
+        <p class="field-error" id="pauta-titulo-error"></p>
+      </div>
+
+      <div class="field">
+        <label for="pauta-descricao">Descrição</label>
+        <textarea id="pauta-descricao" name="descricao" maxlength="10000" rows="6" required aria-describedby="pauta-descricao-error description-count"></textarea>
+        <div class="field-meta">
+          <p class="field-error" id="pauta-descricao-error"></p>
+          <span id="description-count">0 / 10.000</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="pauta-editoria">Editoria</label>
+          <input id="pauta-editoria" name="editoria" type="text" maxlength="100" list="editoria-options" required autocomplete="off" aria-describedby="pauta-editoria-error">
+          <p class="field-error" id="pauta-editoria-error"></p>
+        </div>
+
+        <div class="field">
+          <label for="pauta-status">Status</label>
+          <select id="pauta-status" name="status" required aria-describedby="pauta-status-error">
+            <option value="ideia">Ideia</option>
+            <option value="em_apuracao">Em apuração</option>
+            <option value="publicada">Publicada</option>
+          </select>
+          <p class="field-error" id="pauta-status-error"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pauta-prazo">Prazo <span class="optional">opcional</span></label>
+        <input id="pauta-prazo" name="prazo" type="datetime-local" step="60" aria-describedby="pauta-prazo-hint pauta-prazo-error">
+        <p class="field-hint" id="pauta-prazo-hint">O horário será salvo com o fuso do seu dispositivo.</p>
+        <p class="field-error" id="pauta-prazo-error"></p>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" data-close-dialog="pauta-dialog">Cancelar</button>
+        <button class="button button-primary" id="save-pauta-button" type="submit">Salvar pauta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" class="dialog dialog-detail" aria-labelledby="detail-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">Detalhes da pauta</p>
+        <h2 id="detail-title">Carregando…</h2>
+      </div>
+      <button class="icon-button" type="button" data-close-dialog="detail-dialog" aria-label="Fechar">×</button>
+    </div>
+
+    <div id="detail-loading" class="state-panel compact" role="status">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Carregando detalhes…</p>
+    </div>
+
+    <div id="detail-error" class="form-message" role="alert" hidden></div>
+
+    <div id="detail-content" hidden>
+      <div class="detail-topline">
+        <span id="detail-status" class="status-badge"></span>
+        <span id="detail-editoria" class="detail-editoria"></span>
+      </div>
+      <p id="detail-description" class="detail-description"></p>
+      <dl class="detail-metadata">
+        <div><dt>Prazo</dt><dd id="detail-deadline"></dd></div>
+        <div><dt>Criada em</dt><dd id="detail-created"></dd></div>
+        <div><dt>Atualizada em</dt><dd id="detail-updated"></dd></div>
+      </dl>
+      <div class="dialog-actions">
+        <button class="button button-danger-quiet" id="detail-delete-button" type="button">Excluir</button>
+        <button class="button button-secondary" id="detail-edit-button" type="button">Editar pauta</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="delete-dialog" class="dialog dialog-confirm" aria-labelledby="delete-title">
+    <div class="confirm-mark" aria-hidden="true">!</div>
+    <h2 id="delete-title">Excluir pauta?</h2>
+    <p id="delete-message">Esta ação não pode ser desfeita.</p>
+    <div id="delete-error" class="form-message" role="alert" hidden></div>
+    <form id="delete-form">
+      <div class="dialog-actions">
+        <button class="button button-quiet" id="cancel-delete-button" type="button">Cancelar</button>
+        <button class="button button-danger" id="confirm-delete-button" type="submit">Excluir pauta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/assets/js/app.js" defer></script>
+</body>
+</html>

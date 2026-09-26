@@ -13,6 +13,3 @@
 *.swo
 .DS_Store
 
-/storage/logs/*
-!/storage/logs/.gitkeep
-
